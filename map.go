@@ -1,68 +1,68 @@
 package immutable_map
 
-type Node struct {
+type node struct {
 	b     byte
 	nodes Nodes
 	value interface{}
 }
 
-func (a *Node) Insert(path []byte, value interface{}) *Node {
-	return &Node{
+func (a *node) insert(path []byte, value interface{}) *node {
+	return &node{
 		b:     a.b,
-		nodes: a.nodes.Insert(path[1:], value),
+		nodes: a.nodes.insert(path[1:], value),
 	}
 }
 
-func (a *Node) Contains(path []byte) bool {
+func (a *node) contains(path []byte) bool {
 	if len(path) == 0 {
 		return true
 	}
-	return a.nodes.Contains(path)
+	return a.nodes.contains(path)
 }
 
-func (a *Node) Get(path []byte) (interface{}, bool) {
-	return a.nodes.Get(path)
+func (a *node) get(path []byte) (interface{}, bool) {
+	return a.nodes.get(path)
 }
 
-func newNode(path []byte, value interface{}) *Node {
+func newNode(path []byte, value interface{}) *node {
 	if len(path) == 1 {
-		return &Node{
+		return &node{
 			b:     path[0],
 			nodes: Nodes{},
 			value: value,
 		}
 	}
-	return &Node{
+	return &node{
 		b:     path[0],
-		nodes: Nodes{}.Insert(path[1:], value),
+		nodes: Nodes{}.insert(path[1:], value),
 	}
 }
 
-type Nodes []*Node
+type Nodes []*node
 
-func (a Nodes) Insert(path []byte, value interface{}) Nodes {
+func (a Nodes) insert(path []byte, value interface{}) Nodes {
 	if len(path) == 0 {
 		return a
 	}
 	exists, index := findPos(a, path[0])
 	clone := dup(a)
 	if exists {
-		clone[index] = clone[index].Insert(path, value)
+		clone[index] = clone[index].insert(path, value)
 		return clone
 	}
 	clone = append(clone[:index], append(Nodes{newNode(path, value)}, clone[index:]...)...)
 	return clone
 }
 
-func (a Nodes) Contains(path []byte) bool {
+func (a Nodes) contains(path []byte) bool {
 	exists, index := findPos(a, path[0])
 	if !exists {
 		return false
 	}
-	return a[index].Contains(path[1:])
+	return a[index].contains(path[1:])
 }
 
-func (a Nodes) Get(path []byte) (interface{}, bool) {
+func (a Nodes) get(path []byte) (interface{}, bool) {
 	exists, index := findPos(a, path[0])
 	if !exists {
 		return nil, false
@@ -70,18 +70,18 @@ func (a Nodes) Get(path []byte) (interface{}, bool) {
 	if len(path) == 1 {
 		return a[index].value, true
 	}
-	return a[index].Get(path[1:])
+	return a[index].get(path[1:])
 }
 
-func dup(nodes []*Node) []*Node {
-	out := make([]*Node, len(nodes))
+func dup(nodes []*node) []*node {
+	out := make([]*node, len(nodes))
 	for i, v := range nodes {
 		out[i] = &*v
 	}
 	return out
 }
 
-func findPos(nodes []*Node, b byte) (exists bool, pos int) {
+func findPos(nodes []*node, b byte) (exists bool, pos int) {
 	for i, v := range nodes {
 		if b <= v.b {
 			return true, i
@@ -97,6 +97,7 @@ type Map struct {
 	nodes Nodes
 }
 
+// Creates new Map.
 func New() *Map {
 	return &Map{}
 }
@@ -105,15 +106,17 @@ func (a Map) Contains(path []byte) bool {
 	if len(path) == 0 {
 		return false
 	}
-	return a.nodes.Contains(path)
+	return a.nodes.contains(path)
 }
 
+// Insert value, uniquely identified by path bytes.
 func (a *Map) Insert(path []byte, value interface{}) *Map {
 	return &Map{
-		nodes: a.nodes.Insert(path, value),
+		nodes: a.nodes.insert(path, value),
 	}
 }
 
+// Returns value identified by path bytes.
 func (a Map) Get(path []byte) (interface{}, bool) {
-	return a.nodes.Get(path)
+	return a.nodes.get(path)
 }
