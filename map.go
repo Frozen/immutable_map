@@ -7,9 +7,18 @@ type node struct {
 }
 
 func (a *node) insert(path []byte, value interface{}) *node {
+	// override value
+	if len(path) == 1 {
+		return &node{
+			b:     a.b,
+			nodes: Nodes{},
+			value: value,
+		}
+	}
 	return &node{
 		b:     a.b,
 		nodes: a.nodes.insert(path[1:], value),
+		value: a.value,
 	}
 }
 
@@ -119,4 +128,10 @@ func (a *Map) Insert(path []byte, value interface{}) *Map {
 // Returns value identified by path bytes.
 func (a Map) Get(path []byte) (interface{}, bool) {
 	return a.nodes.get(path)
+}
+
+// Same as Get, but returns just 1 value.
+func (a Map) Get1(path []byte) interface{} {
+	rs, _ := a.Get(path)
+	return rs
 }

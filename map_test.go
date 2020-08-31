@@ -26,3 +26,21 @@ func TestMap_InsertGet(t *testing.T) {
 	require.Equal(t, 5, value)
 	require.True(t, ok)
 }
+
+func TestValuesByKeys(t *testing.T) {
+	m := New().Insert([]byte("t"), 10)
+	m2 := m.Insert([]byte("tx"), 5)
+
+	require.Equal(t, nil, m.Get1([]byte("tx")))
+	require.Equal(t, 5, m2.Get1([]byte("tx")))
+	require.Equal(t, 10, m2.Get1([]byte("t")))
+}
+
+func TestOverride(t *testing.T) {
+	path := []byte("t")
+	m := New().Insert(path, 10)
+	m2 := m.Insert(path, 1)
+
+	require.Equal(t, 10, m.Get1(path))
+	require.Equal(t, 1, m2.Get1(path))
+}
