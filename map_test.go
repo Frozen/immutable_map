@@ -20,11 +20,28 @@ func TestMap(t *testing.T) {
 }
 
 func TestMap_InsertGet(t *testing.T) {
-	m := New()
-	m2 := m.Insert([]byte("tx"), 5)
-	value, ok := m2.Get([]byte("tx"))
-	require.Equal(t, 5, value)
-	require.True(t, ok)
+	t.Run("find equal value", func(t *testing.T) {
+		m := New()
+		m2 := m.Insert([]byte("tx"), 5)
+		value, ok := m2.Get([]byte("tx"))
+		require.Equal(t, 5, value)
+		require.True(t, ok)
+	})
+	t.Run("find less value", func(t *testing.T) {
+		m := New()
+		m2 := m.Insert([]byte("c"), 5)
+		value, ok := m2.Get([]byte("0"))
+		require.False(t, ok)
+		require.Nil(t, value)
+	})
+	t.Run("find gt value", func(t *testing.T) {
+		m := New()
+		m2 := m.Insert([]byte("a"), 5)
+		value, ok := m2.Get([]byte("b"))
+		require.False(t, ok)
+		require.Nil(t, value)
+	})
+
 }
 
 func TestValuesByKeys(t *testing.T) {

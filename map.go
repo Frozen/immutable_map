@@ -53,7 +53,7 @@ func (a Nodes) insert(path []byte, value interface{}) Nodes {
 	if len(path) == 0 {
 		return a
 	}
-	exists, index := findPos(a, path[0])
+	exists, index := findPosForInsert(a, path[0])
 	clone := dup(a)
 	if exists {
 		clone[index] = clone[index].insert(path, value)
@@ -64,7 +64,7 @@ func (a Nodes) insert(path []byte, value interface{}) Nodes {
 }
 
 func (a Nodes) contains(path []byte) bool {
-	exists, index := findPos(a, path[0])
+	exists, index := contains(a, path[0])
 	if !exists {
 		return false
 	}
@@ -72,7 +72,7 @@ func (a Nodes) contains(path []byte) bool {
 }
 
 func (a Nodes) get(path []byte) (interface{}, bool) {
-	exists, index := findPos(a, path[0])
+	exists, index := contains(a, path[0])
 	if !exists {
 		return nil, false
 	}
@@ -90,13 +90,22 @@ func dup(nodes []*node) []*node {
 	return out
 }
 
-func findPos(nodes []*node, b byte) (exists bool, pos int) {
+func findPosForInsert(nodes []*node, b byte) (exists bool, pos int) {
 	for i, v := range nodes {
 		if b <= v.b {
 			return true, i
 		}
 		if b > v.b {
 			continue
+		}
+	}
+	return false, len(nodes)
+}
+
+func contains(nodes []*node, b byte) (exists bool, pos int) {
+	for i, v := range nodes {
+		if b == v.b {
+			return true, i
 		}
 	}
 	return false, len(nodes)
@@ -130,7 +139,7 @@ func (a Map) Get(path []byte) (interface{}, bool) {
 	return a.nodes.get(path)
 }
 
-// Same as Get, but returns just 1 value.
+// Same as Get, but returns only one value.
 func (a Map) Get1(path []byte) interface{} {
 	rs, _ := a.Get(path)
 	return rs
