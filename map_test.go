@@ -42,6 +42,13 @@ func TestMap_InsertGet(t *testing.T) {
 		require.Nil(t, value)
 	})
 
+	t.Run("insert gt values", func(t *testing.T) {
+		m := New()
+		m2 := m.Insert([]byte("items"), 5).Insert([]byte("call"), 6)
+		require.Equal(t, 6, m2.Get1([]byte("call")))
+		require.Equal(t, 5, m2.Get1([]byte("items")))
+	})
+
 }
 
 func TestValuesByKeys(t *testing.T) {

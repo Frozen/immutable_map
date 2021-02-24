@@ -92,7 +92,10 @@ func dup(nodes []*node) []*node {
 
 func findPosForInsert(nodes []*node, b byte) (exists bool, pos int) {
 	for i, v := range nodes {
-		if b <= v.b {
+		if b < v.b {
+			return false, i
+		}
+		if b == v.b {
 			return true, i
 		}
 		if b > v.b {
