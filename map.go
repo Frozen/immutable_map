@@ -11,7 +11,7 @@ func (a *node) insert(path []byte, value interface{}) *node {
 	if len(path) == 1 {
 		return &node{
 			b:     a.b,
-			nodes: Nodes{},
+			nodes: a.nodes,
 			value: value,
 		}
 	}

@@ -49,6 +49,23 @@ func TestMap_InsertGet(t *testing.T) {
 		require.Equal(t, 5, m2.Get1([]byte("items")))
 	})
 
+	t.Run("test right override", func(t *testing.T) {
+		key1 := []byte("ab")
+		key2 := []byte("a")
+
+		m := New().Insert(key1, 10)
+		require.True(t, m.Contains(key1))
+		require.Equal(t, 10, m.Get1(key1))
+
+		m2 := m.Insert(key2, 5)
+		// contains prev data
+		require.True(t, m2.Contains(key1))
+		require.Equal(t, 10, m2.Get1(key1))
+		// contains new data
+		require.True(t, m2.Contains(key2))
+		require.Equal(t, 5, m2.Get1(key2))
+	})
+
 }
 
 func TestValuesByKeys(t *testing.T) {
