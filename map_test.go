@@ -103,24 +103,54 @@ func TestCount(t *testing.T) {
 		require.Equal(t, 0, New().Count())
 	})
 	t.Run("", func(t *testing.T) {
-		t.Skip()
 		require.Equal(t, 1, New().Insert([]byte{5}, 5).Count())
 	})
 }
 
-func TestIterator(t *testing.T) {
-	t.Run("test empty", func(t *testing.T) {
-		iter := New().Iter()
-		require.False(t, iter.HasNext())
+func TestMap_ToStringMap(t *testing.T) {
+	t.Run("test multiple values", func(t *testing.T) {
+		v := New().
+			Insert([]byte("abc"), 5).
+			Insert([]byte("cba"), 6).
+			Insert([]byte("ab"), 7).
+			Insert([]byte("a"), 8)
 
-		require.Panics(t, func() {
-			iter.Next()
-		})
+		m := v.ToStringMap()
+
+		require.Equal(t, map[string]interface{}{
+			"abc": 5,
+			"cba": 6,
+			"ab":  7,
+			"a":   8,
+		}, m)
 	})
-	t.Run("test single value", func(t *testing.T) {
-		iter := New().Insert([]byte("abc"), 5).Iter()
+	t.Run("test empty", func(t *testing.T) {
+		v := New()
+		m := v.ToStringMap()
+		require.Equal(t, map[string]interface{}{}, m)
+	})
+}
 
-		require.True(t, iter.HasNext())
-		require.Equal(t, []byte("abc"), iter.Path())
+func TestMap_ToSlice(t *testing.T) {
+	t.Run("test multiple values", func(t *testing.T) {
+		v := New().
+			Insert([]byte("abc"), 5).
+			Insert([]byte("cba"), 6).
+			Insert([]byte("ab"), 7).
+			Insert([]byte("a"), 8)
+
+		m := v.ToSlice()
+
+		require.Equal(t, []KeyValue{
+			{[]byte("a"), 8},
+			{[]byte("ab"), 7},
+			{[]byte("abc"), 5},
+			{[]byte("cba"), 6},
+		}, m)
+	})
+	t.Run("test empty", func(t *testing.T) {
+		v := New()
+		m := v.ToSlice()
+		require.Len(t, m, 0)
 	})
 }
