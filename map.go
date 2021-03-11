@@ -77,7 +77,8 @@ func (a Nodes) get(path []byte) (interface{}, bool) {
 		return nil, false
 	}
 	if len(path) == 1 {
-		return a[index].value, true
+		value := a[index].value
+		return value, value != nil
 	}
 	return a[index].get(path[1:])
 }
@@ -116,6 +117,7 @@ func contains(nodes []*node, b byte) (exists bool, pos int) {
 
 type Map struct {
 	nodes Nodes
+	count int
 }
 
 // Creates new Map.
@@ -146,4 +148,65 @@ func (a Map) Get(path []byte) (interface{}, bool) {
 func (a Map) Get1(path []byte) interface{} {
 	rs, _ := a.Get(path)
 	return rs
+}
+
+func (a Map) Count() int {
+	return a.count
+}
+
+func (a Map) Iter() *Iter {
+	return newIter(a.nodes)
+}
+
+func newIter(nodes Nodes) *Iter {
+	return &Iter{
+		nodes: nodes,
+	}
+}
+
+type iterPath struct {
+	nodes Nodes
+	n     int
+}
+
+type Iter struct {
+	nodes Nodes
+	path  []iterPath
+}
+
+func (a *Iter) HasNext() bool {
+	if len(a.path) == 0 {
+		v := a.nodes
+		for {
+			if len(v) > 0 {
+				a.path = append(a.path, iterPath{v, 0})
+				v = v[0].nodes
+			} else {
+				break
+			}
+		}
+		return len(a.path) > 0
+	}
+	panic("asfsafs")
+	//for {
+	//
+	//}
+}
+func (a Iter) Path() []byte {
+	if len(a.path) == 0 {
+		panic("invalid Path call")
+	}
+	cur := make([]byte, 0, len(a.path))
+	for _, v := range a.path {
+		cur = append(cur, v.nodes[v.n].b)
+	}
+	return cur
+}
+
+func (a Iter) Next() interface{} {
+	if len(a.path) == 0 {
+		panic("invalid Next call")
+	}
+	last := a.path[len(a.path)-1]
+	return last.nodes[last.n]
 }

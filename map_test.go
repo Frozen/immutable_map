@@ -1,7 +1,11 @@
-package immutable_map
+package immutable_map_test
 
-import "testing"
-import "github.com/stretchr/testify/require"
+import (
+	"testing"
+
+	. "github.com/frozen/immutable_map"
+	"github.com/stretchr/testify/require"
+)
 
 func TestMap(t *testing.T) {
 	m := New()
@@ -20,13 +24,6 @@ func TestMap(t *testing.T) {
 }
 
 func TestMap_InsertGet(t *testing.T) {
-	t.Run("find equal value", func(t *testing.T) {
-		m := New()
-		m2 := m.Insert([]byte("tx"), 5)
-		value, ok := m2.Get([]byte("tx"))
-		require.Equal(t, 5, value)
-		require.True(t, ok)
-	})
 	t.Run("find less value", func(t *testing.T) {
 		m := New()
 		m2 := m.Insert([]byte("c"), 5)
@@ -49,7 +46,7 @@ func TestMap_InsertGet(t *testing.T) {
 		require.Equal(t, 5, m2.Get1([]byte("items")))
 	})
 
-	t.Run("test right override", func(t *testing.T) {
+	t.Run("test override 1", func(t *testing.T) {
 		key1 := []byte("ab")
 		key2 := []byte("a")
 
@@ -66,6 +63,24 @@ func TestMap_InsertGet(t *testing.T) {
 		require.Equal(t, 5, m2.Get1(key2))
 	})
 
+	t.Run("test override 2", func(t *testing.T) {
+		path := []byte("t")
+		m := New().Insert(path, 10)
+		m2 := m.Insert(path, 1)
+
+		require.Equal(t, 10, m.Get1(path))
+		require.Equal(t, 1, m2.Get1(path))
+	})
+
+	t.Run("test absence of value on same path", func(t *testing.T) {
+		path := []byte("aa")
+		m := New().Insert(path, 10)
+
+		inf, ok := m.Get([]byte("a"))
+		require.False(t, ok)
+		require.Nil(t, inf)
+	})
+
 }
 
 func TestValuesByKeys(t *testing.T) {
@@ -77,11 +92,35 @@ func TestValuesByKeys(t *testing.T) {
 	require.Equal(t, 10, m2.Get1([]byte("t")))
 }
 
-func TestOverride(t *testing.T) {
-	path := []byte("t")
-	m := New().Insert(path, 10)
-	m2 := m.Insert(path, 1)
+func TestContains(t *testing.T) {
+	t.Run("empty search bytes", func(t *testing.T) {
+		require.False(t, New().Insert(nil, 5).Contains(nil))
+	})
+}
 
-	require.Equal(t, 10, m.Get1(path))
-	require.Equal(t, 1, m2.Get1(path))
+func TestCount(t *testing.T) {
+	t.Run("check empty", func(t *testing.T) {
+		require.Equal(t, 0, New().Count())
+	})
+	t.Run("", func(t *testing.T) {
+		t.Skip()
+		require.Equal(t, 1, New().Insert([]byte{5}, 5).Count())
+	})
+}
+
+func TestIterator(t *testing.T) {
+	t.Run("test empty", func(t *testing.T) {
+		iter := New().Iter()
+		require.False(t, iter.HasNext())
+
+		require.Panics(t, func() {
+			iter.Next()
+		})
+	})
+	t.Run("test single value", func(t *testing.T) {
+		iter := New().Insert([]byte("abc"), 5).Iter()
+
+		require.True(t, iter.HasNext())
+		require.Equal(t, []byte("abc"), iter.Path())
+	})
 }
